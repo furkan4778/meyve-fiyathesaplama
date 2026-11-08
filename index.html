@@ -38,10 +38,23 @@ button:active{transform:scale(.98)}
 .item-price{font-weight:bold;color:var(--accent);font-size:16px}
 .delete-button{width:auto;padding:8px 12px;background:var(--del-bg);color:var(--del-text);font-size:13px}
 .grand-total{background:var(--panel);border:1px solid var(--field);border-radius:15px;padding:20px;margin-top:20px;text-align:center}
-#ciro,#grandTotal{font-size:30px;color:var(--accent);font-weight:bold;overflow-wrap:anywhere}
+#ciro,#grandTotal,#debtTotal{font-size:30px;color:var(--accent);font-weight:bold;overflow-wrap:anywhere}
 .empty{text-align:center;color:#829382;font-size:14px;padding:15px 0}
 .footer{text-align:center;color:#829382;font-size:12px;line-height:1.8;margin-top:25px}
 .footer strong{color:#a5c5a5}
+.debt-card{background:var(--item);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.debt-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.debt-name{font-weight:bold;font-size:17px;overflow-wrap:anywhere}
+.debt-owed{font-weight:bold;font-size:18px;color:#ffd27a;white-space:nowrap}
+.debt-owed.zero{color:var(--accent)}
+.debt-entry{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
+.debt-entry span{flex:1;min-width:0;overflow-wrap:anywhere}
+.debt-entry b{color:#ffd27a;white-space:nowrap}
+.debt-entry b.pay{color:var(--accent)}
+.x-button{width:auto;padding:4px 9px;background:var(--del-bg);color:var(--del-text);font-size:12px}
+.debt-card input{padding:12px;font-size:16px}
+.debt-actions{display:flex;gap:8px}
+.debt-actions button{padding:12px 8px;font-size:14px}
 </style>
 </head>
 <body>
@@ -83,6 +96,12 @@ button:active{transform:scale(.98)}
   <button class="add-button" style="margin-top:12px" onclick="completeSale()">💰 Satışı Tamamla</button>
   <button class="reset-button" onclick="resetAll()">Sepeti Temizle</button>
 
+  <div class="input-group" style="margin-top:18px">
+    <label for="basketDebtName">Veresiye ise kişi adı</label>
+    <input type="text" id="basketDebtName" list="names" placeholder="İsim" style="font-size:16px;margin-bottom:10px">
+    <button class="reset-button" style="margin-top:0" onclick="debtFromBasket()">📒 Sepeti Borca Yaz</button>
+  </div>
+
   <h2 class="section-title">Bugünkü Ciro</h2>
   <div class="grand-total" style="margin-top:0">
     <p id="ciroCount">Bugün 0 satış</p>
@@ -93,6 +112,21 @@ button:active{transform:scale(.98)}
   <h2 class="section-title">Geçmiş Günler</h2>
   <div class="list" id="days"></div>
   <button class="reset-button" onclick="resetCiro()">Ciroyu Sıfırla</button>
+
+  <h2 class="section-title">📒 Borç Defteri</h2>
+  <div class="grand-total" style="margin-top:0">
+    <p>Toplam Alacak</p>
+    <div id="debtTotal">0,00 TL</div>
+  </div>
+  <div class="input-group" style="margin-top:16px">
+    <label for="newName">Yeni borç yaz</label>
+    <input type="text" id="newName" list="names" placeholder="İsim" style="font-size:16px;margin-bottom:8px">
+    <input type="number" id="newAmt" placeholder="Tutar (TL)" min="0" step="any" inputmode="decimal" style="font-size:16px;margin-bottom:8px">
+    <input type="text" id="newNote" placeholder="Ne verildi? (örn: 2 ekmek, süt)" style="font-size:16px;margin-bottom:10px">
+    <button class="add-button" onclick="addDebtForm()">+ Borç Yaz</button>
+  </div>
+  <datalist id="names"></datalist>
+  <div class="list" id="debts"></div>
 
   <div class="footer">
     Market Hesaplayıcı © 2026<br>
@@ -205,6 +239,132 @@ function renderCiro(){
   });
 }
 
+const DKEY = "market-borc-v1";
+function loadDebts(){
+  try{
+    const d = JSON.parse(localStorage.getItem(DKEY));
+    if(!Array.isArray(d)) return [];
+    return d.filter(x => x && typeof x.name === "string" && Array.isArray(x.entries)).map(x => ({
+      name: x.name,
+      entries: x.entries.filter(e => e && Number.isFinite(e.amt) && Number.isFinite(e.ts)).map(e => ({ ts: e.ts, amt: e.amt, note: typeof e.note === "string" ? e.note : "" }))
+    }));
+  }catch(e){ return []; }
+}
+function saveDebts(){
+  try{ localStorage.setItem(DKEY, JSON.stringify(debts)); }catch(e){}
+}
+let debts = loadDebts();
+const owed = p => p.entries.reduce((s,e) => s + e.amt, 0);
+const mk = (tag, cls) => { const e = document.createElement(tag); if(cls) e.className = cls; return e; };
+
+function addEntry(name, amt, note){
+  name = name.trim();
+  if(!name){ alert("Lütfen isim yaz."); return false; }
+  const key = name.toLocaleLowerCase("tr-TR");
+  let p = debts.find(x => x.name.toLocaleLowerCase("tr-TR") === key);
+  if(!p){ p = { name: name, entries: [] }; debts.push(p); }
+  p.entries.push({ ts: Date.now(), amt: amt, note: note.trim() });
+  saveDebts();
+  renderDebts();
+  return true;
+}
+
+function debtFromBasket(){
+  if(items.length === 0){ alert("Sepet boş."); return; }
+  const nameEl = document.getElementById("basketDebtName");
+  const sum = items.reduce((s,it) => s + it.total, 0);
+  const note = items.map(it => it.detail).join(", ");
+  if(addEntry(nameEl.value, sum, note)){
+    items = [];
+    render();
+    nameEl.value = "";
+  }
+}
+
+function addDebtForm(){
+  const n = document.getElementById("newName");
+  const a = document.getElementById("newAmt");
+  const t = document.getElementById("newNote");
+  const v = Number(a.value);
+  if(a.value.trim() === "" || !Number.isFinite(v) || v <= 0){ alert("Lütfen geçerli bir tutar gir."); return; }
+  if(addEntry(n.value, v, t.value)){ n.value = ""; a.value = ""; t.value = ""; }
+}
+
+function renderDebts(){
+  const list = document.getElementById("debts");
+  list.innerHTML = "";
+  const dl = document.getElementById("names");
+  dl.innerHTML = "";
+  debts.forEach(p => { const o = document.createElement("option"); o.value = p.name; dl.appendChild(o); });
+  document.getElementById("debtTotal").textContent = fmt(debts.reduce((s,p) => s + owed(p), 0));
+  if(debts.length === 0){
+    list.innerHTML = '<div class="empty">Henüz borç kaydı yok.</div>';
+    return;
+  }
+  debts.slice().sort((a,b) => owed(b) - owed(a)).forEach(p => {
+    const card = mk("div", "debt-card");
+    const head = mk("div", "debt-head");
+    const nm = mk("span", "debt-name");
+    nm.textContent = p.name;
+    const ow = mk("span", "debt-owed" + (owed(p) <= 0 ? " zero" : ""));
+    ow.textContent = fmt(owed(p));
+    head.append(nm, ow);
+    card.appendChild(head);
+
+    p.entries.slice().reverse().forEach(e => {
+      const row = mk("div", "debt-entry");
+      const left = mk("span");
+      left.textContent = new Date(e.ts).toLocaleDateString("tr-TR") + " · " + (e.note || (e.amt < 0 ? "Ödeme" : "Borç"));
+      const right = mk("b", e.amt < 0 ? "pay" : "");
+      right.textContent = (e.amt < 0 ? "− " : "+ ") + fmt(Math.abs(e.amt));
+      const x = mk("button", "x-button");
+      x.textContent = "×";
+      x.addEventListener("click", () => {
+        if(confirm("Bu kaydı silmek istiyor musun?")){
+          p.entries = p.entries.filter(z => z !== e);
+          saveDebts();
+          renderDebts();
+        }
+      });
+      row.append(left, right, x);
+      card.appendChild(row);
+    });
+
+    const amtIn = mk("input");
+    amtIn.type = "number"; amtIn.placeholder = "Tutar (TL)"; amtIn.min = "0"; amtIn.step = "any"; amtIn.setAttribute("inputmode", "decimal");
+    const noteIn = mk("input");
+    noteIn.type = "text"; noteIn.placeholder = "Ne verildi? (isteğe bağlı)";
+    card.append(amtIn, noteIn);
+
+    const act = sign => {
+      const v = Number(amtIn.value);
+      if(amtIn.value.trim() === "" || !Number.isFinite(v) || v <= 0){ alert("Lütfen geçerli bir tutar gir."); return; }
+      const note = noteIn.value.trim() || (sign < 0 ? "Ödeme" : "");
+      addEntry(p.name, sign * v, note);
+    };
+    const actions = mk("div", "debt-actions");
+    const addB = mk("button", "add-button");
+    addB.textContent = "+ Borç Ekle";
+    addB.addEventListener("click", () => act(1));
+    const payB = mk("button", "reset-button");
+    payB.style.marginTop = "0";
+    payB.textContent = "Ödeme Al";
+    payB.addEventListener("click", () => act(-1));
+    const delB = mk("button", "delete-button");
+    delB.textContent = "Sil";
+    delB.addEventListener("click", () => {
+      if(confirm(p.name + " kişisinin tüm kayıtları silinsin mi?")){
+        debts = debts.filter(z => z !== p);
+        saveDebts();
+        renderDebts();
+      }
+    });
+    actions.append(addB, payB, delB);
+    card.appendChild(actions);
+    list.appendChild(card);
+  });
+}
+
 function resetCiro(){
   if(sales.length === 0) return;
   if(!confirm("Tüm ciro kayıtları silinecek. Emin misin?")) return;
@@ -300,6 +460,7 @@ qtyEl.addEventListener("input", calculate);
 priceEl.addEventListener("input", calculate);
 render();
 renderCiro();
+renderDebts();
 </script>
 </body>
 </html>

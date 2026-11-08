@@ -21,22 +21,22 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 25px 15px;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: #1b271c;
-            padding: 28px;
+            padding: 25px;
             border-radius: 22px;
             border: 1px solid #304333;
+            height: fit-content;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
         .icon {
@@ -55,7 +55,7 @@
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
@@ -85,8 +85,7 @@
             padding: 22px;
             border-radius: 15px;
             text-align: center;
-            margin-top: 10px;
-            margin-bottom: 20px;
+            margin: 22px 0 15px;
         }
 
         .result p {
@@ -104,12 +103,10 @@
 
         button {
             width: 100%;
-            padding: 16px;
+            padding: 15px;
             border: none;
             border-radius: 12px;
-            background: #75bd75;
-            color: #102010;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -118,12 +115,86 @@
             transform: scale(0.98);
         }
 
+        .add-button {
+            background: #75bd75;
+            color: #102010;
+        }
+
+        .reset-button {
+            background: #344536;
+            color: white;
+            margin-top: 12px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            margin: 28px 0 15px;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item {
+            background: #26352a;
+            padding: 14px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #8ce28c;
+            font-size: 16px;
+        }
+
+        .delete-button {
+            width: auto;
+            padding: 8px 12px;
+            background: #59312f;
+            color: #ffb5ae;
+            font-size: 13px;
+        }
+
+        .grand-total {
+            background: #263b29;
+            border: 1px solid #405541;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .grand-total p {
+            color: #b9cbb9;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        #grandTotal {
+            font-size: 30px;
+            color: #8ce28c;
+            font-weight: bold;
+        }
+
+        .empty {
+            text-align: center;
+            color: #829382;
+            font-size: 14px;
+            padding: 15px 0;
+        }
+
         .footer {
             text-align: center;
             color: #829382;
             font-size: 12px;
             line-height: 1.8;
-            margin-top: 22px;
+            margin-top: 25px;
         }
 
         .footer strong {
@@ -139,7 +210,7 @@
         <div class="header">
             <div class="icon">🍎</div>
             <h1>Meyve Hesaplayıcı</h1>
-            <p>Gramajı gir, fiyatı anında öğren.</p>
+            <p>Hesapla, onayla ve toplamı öğren.</p>
         </div>
 
         <div class="input-group">
@@ -167,12 +238,27 @@
         </div>
 
         <div class="result">
-            <p>Ödenecek Tutar</p>
+            <p>Hesaplanan Tutar</p>
             <div id="total">0,00 TL</div>
         </div>
 
-        <button onclick="resetCalculator()">
-            Sıfırla
+        <button class="add-button" onclick="addPrice()">
+            ✓ Tutarı Onayla
+        </button>
+
+        <h2 class="section-title">Onaylanan Tutarlar</h2>
+
+        <div class="list" id="priceList">
+            <div class="empty">Henüz tutar eklenmedi.</div>
+        </div>
+
+        <div class="grand-total">
+            <p>Genel Toplam</p>
+            <div id="grandTotal">0,00 TL</div>
+        </div>
+
+        <button class="reset-button" onclick="resetAll()">
+            Tümünü Sıfırla
         </button>
 
         <div class="footer">
@@ -187,6 +273,17 @@
         const gramsInput = document.getElementById("grams");
         const priceInput = document.getElementById("price");
         const totalDisplay = document.getElementById("total");
+        const grandTotalDisplay = document.getElementById("grandTotal");
+        const priceList = document.getElementById("priceList");
+
+        let prices = [];
+
+        function formatMoney(amount) {
+            return amount.toLocaleString("tr-TR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + " TL";
+        }
 
         function calculate() {
             const grams = Number(gramsInput.value);
@@ -206,21 +303,108 @@
 
             const total = (grams / 1000) * price;
 
-            totalDisplay.textContent =
-                total.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }) + " TL";
+            totalDisplay.textContent = formatMoney(total);
         }
 
-        function resetCalculator() {
+        function addPrice() {
+            if (
+                gramsInput.value.trim() === "" ||
+                priceInput.value.trim() === ""
+            ) {
+                alert("Lütfen gramaj ve kilogram fiyatını gir.");
+                return;
+            }
+
+            const grams = Number(gramsInput.value);
+            const price = Number(priceInput.value);
+
+            if (
+                !Number.isFinite(grams) ||
+                !Number.isFinite(price) ||
+                grams < 0 ||
+                price < 0
+            ) {
+                alert("Lütfen geçerli değerler gir.");
+                return;
+            }
+
+            const calculatedPrice = (grams / 1000) * price;
+
+            prices.push(calculatedPrice);
+
+            renderPrices();
+
+            // Yeni ürün için alanları temizle
             gramsInput.value = "";
             priceInput.value = "";
             totalDisplay.textContent = "0,00 TL";
+
+            gramsInput.focus();
+        }
+
+        function renderPrices() {
+            priceList.innerHTML = "";
+
+            if (prices.length === 0) {
+                priceList.innerHTML =
+                    '<div class="empty">Henüz tutar eklenmedi.</div>';
+            }
+
+            prices.forEach((price, index) => {
+                const item = document.createElement("div");
+                item.className = "item";
+
+                const priceText = document.createElement("span");
+                priceText.className = "item-price";
+                priceText.textContent = formatMoney(price);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.className = "delete-button";
+                deleteButton.textContent = "Sil";
+                deleteButton.addEventListener("click", () => {
+                    deletePrice(index);
+                });
+
+                item.appendChild(priceText);
+                item.appendChild(deleteButton);
+
+                priceList.appendChild(item);
+            });
+
+            const sum = prices.reduce((total, price) => total + price, 0);
+
+            grandTotalDisplay.textContent = formatMoney(sum);
+        }
+
+        function deletePrice(index) {
+            prices.splice(index, 1);
+            renderPrices();
+        }
+
+        function resetAll() {
+            if (prices.length === 0 &&
+                gramsInput.value === "" &&
+                priceInput.value === "") {
+                return;
+            }
+
+            if (!confirm("Tüm tutarları silmek istediğine emin misin?")) {
+                return;
+            }
+
+            prices = [];
+
+            gramsInput.value = "";
+            priceInput.value = "";
+            totalDisplay.textContent = "0,00 TL";
+
+            renderPrices();
         }
 
         gramsInput.addEventListener("input", calculate);
         priceInput.addEventListener("input", calculate);
+
+        renderPrices();
     </script>
 
 </body>

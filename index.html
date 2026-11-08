@@ -1,411 +1,188 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#101810">
-    <title>Meyve Hesaplayıcı</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            background: #101810;
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 25px 15px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 420px;
-            background: #1b271c;
-            padding: 25px;
-            border-radius: 22px;
-            border: 1px solid #304333;
-            height: fit-content;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .icon {
-            font-size: 45px;
-            margin-bottom: 12px;
-        }
-
-        h1 {
-            font-size: 25px;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #a5b6a5;
-            font-size: 14px;
-        }
-
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 9px;
-            font-size: 14px;
-            color: #d7e5d7;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #405541;
-            background: #101810;
-            color: white;
-            font-size: 18px;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #7bc67b;
-        }
-
-        .result {
-            background: #263b29;
-            padding: 22px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 22px 0 15px;
-        }
-
-        .result p {
-            color: #b9cbb9;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        #total {
-            font-size: 34px;
-            font-weight: bold;
-            color: #8ce28c;
-            overflow-wrap: anywhere;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .add-button {
-            background: #75bd75;
-            color: #102010;
-        }
-
-        .reset-button {
-            background: #344536;
-            color: white;
-            margin-top: 12px;
-        }
-
-        .section-title {
-            font-size: 17px;
-            margin: 28px 0 15px;
-        }
-
-        .list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .item {
-            background: #26352a;
-            padding: 14px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .item-price {
-            font-weight: bold;
-            color: #8ce28c;
-            font-size: 16px;
-        }
-
-        .delete-button {
-            width: auto;
-            padding: 8px 12px;
-            background: #59312f;
-            color: #ffb5ae;
-            font-size: 13px;
-        }
-
-        .grand-total {
-            background: #263b29;
-            border: 1px solid #405541;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .grand-total p {
-            color: #b9cbb9;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        #grandTotal {
-            font-size: 30px;
-            color: #8ce28c;
-            font-weight: bold;
-        }
-
-        .empty {
-            text-align: center;
-            color: #829382;
-            font-size: 14px;
-            padding: 15px 0;
-        }
-
-        .footer {
-            text-align: center;
-            color: #829382;
-            font-size: 12px;
-            line-height: 1.8;
-            margin-top: 25px;
-        }
-
-        .footer strong {
-            color: #a5c5a5;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101810">
+<title>Market Hesaplayıcı</title>
+<style>
+:root{color-scheme:dark;--bg:#101810;--card:#1b271c;--line:#304333;--field:#405541;--panel:#263b29;--item:#26352a;--text:#fff;--muted:#a5b6a5;--accent:#8ce28c;--btn:#75bd75;--btn-text:#102010;--del-bg:#59312f;--del-text:#ffb5ae;--sec:#344536;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:25px 15px}
+.container{width:100%;max-width:420px;background:var(--card);padding:25px;border-radius:22px;border:1px solid var(--line);height:fit-content}
+.header{text-align:center;margin-bottom:22px}
+.icon{font-size:45px;margin-bottom:10px}
+h1{font-size:25px;margin-bottom:8px}
+.header p{color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;margin-bottom:20px}
+.tab{flex:1;padding:12px;border-radius:12px;background:var(--sec);color:var(--text);font-size:14px}
+.tab.active{background:var(--btn);color:var(--btn-text)}
+.input-group{margin-bottom:18px}
+label{display:block;margin-bottom:9px;font-size:14px;color:#d7e5d7}
+input{width:100%;padding:16px;border-radius:12px;border:1px solid var(--field);background:var(--bg);color:var(--text);font-size:18px;outline:none}
+input:focus{border-color:#7bc67b}
+.result{background:var(--panel);padding:22px;border-radius:15px;text-align:center;margin:22px 0 15px}
+.result p,.grand-total p{color:#b9cbb9;font-size:14px;margin-bottom:10px}
+#total{font-size:34px;font-weight:bold;color:var(--accent);overflow-wrap:anywhere}
+button{width:100%;padding:15px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer}
+button:active{transform:scale(.98)}
+.add-button{background:var(--btn);color:var(--btn-text)}
+.reset-button{background:var(--sec);color:var(--text);margin-top:12px}
+.section-title{font-size:17px;margin:28px 0 15px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--item);padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.item-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.item-detail{font-size:12px;color:var(--muted)}
+.item-price{font-weight:bold;color:var(--accent);font-size:16px}
+.delete-button{width:auto;padding:8px 12px;background:var(--del-bg);color:var(--del-text);font-size:13px}
+.grand-total{background:var(--panel);border:1px solid var(--field);border-radius:15px;padding:20px;margin-top:20px;text-align:center}
+#grandTotal{font-size:30px;color:var(--accent);font-weight:bold;overflow-wrap:anywhere}
+.empty{text-align:center;color:#829382;font-size:14px;padding:15px 0}
+.footer{text-align:center;color:#829382;font-size:12px;line-height:1.8;margin-top:25px}
+.footer strong{color:#a5c5a5}
+</style>
 </head>
-
 <body>
+<div class="container">
+  <div class="header">
+    <div class="icon">🛒</div>
+    <h1>Market Hesaplayıcı</h1>
+    <p>Hesapla, onayla ve toplamı öğren.</p>
+  </div>
 
-    <div class="container">
+  <div class="tabs">
+    <button class="tab active" id="tabWeight" onclick="setMode('weight')">🍎 Tartılı</button>
+    <button class="tab" id="tabPiece" onclick="setMode('piece')">🍫 Adetli</button>
+  </div>
 
-        <div class="header">
-            <div class="icon">🍎</div>
-            <h1>Meyve Hesaplayıcı</h1>
-            <p>Hesapla, onayla ve toplamı öğren.</p>
-        </div>
+  <div class="input-group">
+    <label for="qty" id="qtyLabel">Ağırlık (Gram)</label>
+    <input type="number" id="qty" placeholder="Örn: 750" min="0" step="any" inputmode="decimal">
+  </div>
+  <div class="input-group">
+    <label for="price" id="priceLabel">Kilogram Fiyatı (TL)</label>
+    <input type="number" id="price" placeholder="Örn: 45" min="0" step="any" inputmode="decimal">
+  </div>
 
-        <div class="input-group">
-            <label for="grams">Ağırlık (Gram)</label>
-            <input
-                type="number"
-                id="grams"
-                placeholder="Örn: 750"
-                min="0"
-                step="any"
-                inputmode="decimal"
-            >
-        </div>
+  <div class="result">
+    <p>Hesaplanan Tutar</p>
+    <div id="total">0,00 TL</div>
+  </div>
 
-        <div class="input-group">
-            <label for="price">Kilogram Fiyatı (TL)</label>
-            <input
-                type="number"
-                id="price"
-                placeholder="Örn: 45"
-                min="0"
-                step="any"
-                inputmode="decimal"
-            >
-        </div>
+  <button class="add-button" onclick="addItem()">✓ Tutarı Onayla</button>
 
-        <div class="result">
-            <p>Hesaplanan Tutar</p>
-            <div id="total">0,00 TL</div>
-        </div>
+  <h2 class="section-title">Onaylanan Tutarlar</h2>
+  <div class="list" id="list"></div>
 
-        <button class="add-button" onclick="addPrice()">
-            ✓ Tutarı Onayla
-        </button>
+  <div class="grand-total">
+    <p>Genel Toplam</p>
+    <div id="grandTotal">0,00 TL</div>
+  </div>
+  <button class="reset-button" onclick="resetAll()">Tümünü Sıfırla</button>
 
-        <h2 class="section-title">Onaylanan Tutarlar</h2>
+  <div class="footer">
+    Market Hesaplayıcı © 2026<br>
+    <strong>Bu site Furkan tarafından yapılmıştır. ❤️</strong>
+  </div>
+</div>
 
-        <div class="list" id="priceList">
-            <div class="empty">Henüz tutar eklenmedi.</div>
-        </div>
+<script>
+const qtyEl = document.getElementById("qty");
+const priceEl = document.getElementById("price");
+const totalEl = document.getElementById("total");
+const grandEl = document.getElementById("grandTotal");
+const listEl = document.getElementById("list");
 
-        <div class="grand-total">
-            <p>Genel Toplam</p>
-            <div id="grandTotal">0,00 TL</div>
-        </div>
+let mode = "weight";
+let items = [];
 
-        <button class="reset-button" onclick="resetAll()">
-            Tümünü Sıfırla
-        </button>
+const fmt = n => n.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " TL";
+const num = n => n.toLocaleString("tr-TR",{maximumFractionDigits:2});
 
-        <div class="footer">
-            Meyve Hesaplayıcı © 2026
-            <br>
-            <strong>Bu site Furkan tarafından yapılmıştır. ❤️</strong>
-        </div>
+function setMode(m){
+  mode = m;
+  document.getElementById("tabWeight").classList.toggle("active", m==="weight");
+  document.getElementById("tabPiece").classList.toggle("active", m==="piece");
+  document.getElementById("qtyLabel").textContent = m==="weight" ? "Ağırlık (Gram)" : "Adet";
+  document.getElementById("priceLabel").textContent = m==="weight" ? "Kilogram Fiyatı (TL)" : "Tanesi (TL)";
+  qtyEl.placeholder = m==="weight" ? "Örn: 750" : "Örn: 3";
+  priceEl.placeholder = m==="weight" ? "Örn: 45" : "Örn: 25";
+  qtyEl.value = ""; priceEl.value = "";
+  calculate();
+}
 
-    </div>
+function compute(){
+  if(qtyEl.value.trim()==="" || priceEl.value.trim()==="") return null;
+  const q = Number(qtyEl.value), p = Number(priceEl.value);
+  if(!Number.isFinite(q) || !Number.isFinite(p) || q<0 || p<0) return null;
+  return { q, p, total: mode==="weight" ? (q/1000)*p : q*p };
+}
 
-    <script>
-        const gramsInput = document.getElementById("grams");
-        const priceInput = document.getElementById("price");
-        const totalDisplay = document.getElementById("total");
-        const grandTotalDisplay = document.getElementById("grandTotal");
-        const priceList = document.getElementById("priceList");
+function calculate(){
+  const r = compute();
+  totalEl.textContent = r ? fmt(r.total) : "0,00 TL";
+}
 
-        let prices = [];
+function addItem(){
+  if(qtyEl.value.trim()==="" || priceEl.value.trim()===""){
+    alert(mode==="weight" ? "Lütfen gramaj ve kilogram fiyatını gir." : "Lütfen adet ve birim fiyatını gir.");
+    return;
+  }
+  const r = compute();
+  if(!r){ alert("Lütfen geçerli değerler gir."); return; }
+  items.push({
+    total: r.total,
+    detail: mode==="weight"
+      ? num(r.q) + " g × " + num(r.p) + " TL/kg"
+      : num(r.q) + " adet × " + num(r.p) + " TL"
+  });
+  render();
+  qtyEl.value = ""; priceEl.value = "";
+  totalEl.textContent = "0,00 TL";
+  qtyEl.focus();
+}
 
-        function formatMoney(amount) {
-            return amount.toLocaleString("tr-TR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }) + " TL";
-        }
+function render(){
+  listEl.innerHTML = "";
+  if(items.length===0){
+    listEl.innerHTML = '<div class="empty">Henüz tutar eklenmedi.</div>';
+  }
+  items.forEach((it,i)=>{
+    const row = document.createElement("div");
+    row.className = "item";
+    const info = document.createElement("div");
+    info.className = "item-info";
+    const p = document.createElement("span");
+    p.className = "item-price";
+    p.textContent = fmt(it.total);
+    const d = document.createElement("span");
+    d.className = "item-detail";
+    d.textContent = it.detail;
+    info.append(p,d);
+    const del = document.createElement("button");
+    del.className = "delete-button";
+    del.textContent = "Sil";
+    del.addEventListener("click",()=>{ items.splice(i,1); render(); });
+    row.append(info,del);
+    listEl.appendChild(row);
+  });
+  grandEl.textContent = fmt(items.reduce((s,it)=>s+it.total,0));
+}
 
-        function calculate() {
-            const grams = Number(gramsInput.value);
-            const price = Number(priceInput.value);
+function resetAll(){
+  if(items.length===0 && qtyEl.value==="" && priceEl.value==="") return;
+  if(!confirm("Tüm tutarları silmek istediğine emin misin?")) return;
+  items = [];
+  qtyEl.value = ""; priceEl.value = "";
+  totalEl.textContent = "0,00 TL";
+  render();
+}
 
-            if (
-                gramsInput.value === "" ||
-                priceInput.value === "" ||
-                !Number.isFinite(grams) ||
-                !Number.isFinite(price) ||
-                grams < 0 ||
-                price < 0
-            ) {
-                totalDisplay.textContent = "0,00 TL";
-                return;
-            }
-
-            const total = (grams / 1000) * price;
-
-            totalDisplay.textContent = formatMoney(total);
-        }
-
-        function addPrice() {
-            if (
-                gramsInput.value.trim() === "" ||
-                priceInput.value.trim() === ""
-            ) {
-                alert("Lütfen gramaj ve kilogram fiyatını gir.");
-                return;
-            }
-
-            const grams = Number(gramsInput.value);
-            const price = Number(priceInput.value);
-
-            if (
-                !Number.isFinite(grams) ||
-                !Number.isFinite(price) ||
-                grams < 0 ||
-                price < 0
-            ) {
-                alert("Lütfen geçerli değerler gir.");
-                return;
-            }
-
-            const calculatedPrice = (grams / 1000) * price;
-
-            prices.push(calculatedPrice);
-
-            renderPrices();
-
-            // Yeni ürün için alanları temizle
-            gramsInput.value = "";
-            priceInput.value = "";
-            totalDisplay.textContent = "0,00 TL";
-
-            gramsInput.focus();
-        }
-
-        function renderPrices() {
-            priceList.innerHTML = "";
-
-            if (prices.length === 0) {
-                priceList.innerHTML =
-                    '<div class="empty">Henüz tutar eklenmedi.</div>';
-            }
-
-            prices.forEach((price, index) => {
-                const item = document.createElement("div");
-                item.className = "item";
-
-                const priceText = document.createElement("span");
-                priceText.className = "item-price";
-                priceText.textContent = formatMoney(price);
-
-                const deleteButton = document.createElement("button");
-                deleteButton.className = "delete-button";
-                deleteButton.textContent = "Sil";
-                deleteButton.addEventListener("click", () => {
-                    deletePrice(index);
-                });
-
-                item.appendChild(priceText);
-                item.appendChild(deleteButton);
-
-                priceList.appendChild(item);
-            });
-
-            const sum = prices.reduce((total, price) => total + price, 0);
-
-            grandTotalDisplay.textContent = formatMoney(sum);
-        }
-
-        function deletePrice(index) {
-            prices.splice(index, 1);
-            renderPrices();
-        }
-
-        function resetAll() {
-            if (prices.length === 0 &&
-                gramsInput.value === "" &&
-                priceInput.value === "") {
-                return;
-            }
-
-            if (!confirm("Tüm tutarları silmek istediğine emin misin?")) {
-                return;
-            }
-
-            prices = [];
-
-            gramsInput.value = "";
-            priceInput.value = "";
-            totalDisplay.textContent = "0,00 TL";
-
-            renderPrices();
-        }
-
-        gramsInput.addEventListener("input", calculate);
-        priceInput.addEventListener("input", calculate);
-
-        renderPrices();
-    </script>
-
+qtyEl.addEventListener("input", calculate);
+priceEl.addEventListener("input", calculate);
+render();
+</script>
 </body>
 </html>

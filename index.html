@@ -38,7 +38,7 @@ button:active{transform:scale(.98)}
 .item-price{font-weight:bold;color:var(--accent);font-size:16px}
 .delete-button{width:auto;padding:8px 12px;background:var(--del-bg);color:var(--del-text);font-size:13px}
 .grand-total{background:var(--panel);border:1px solid var(--field);border-radius:15px;padding:20px;margin-top:20px;text-align:center}
-#grandTotal{font-size:30px;color:var(--accent);font-weight:bold;overflow-wrap:anywhere}
+#ciro,#grandTotal{font-size:30px;color:var(--accent);font-weight:bold;overflow-wrap:anywhere}
 .empty{text-align:center;color:#829382;font-size:14px;padding:15px 0}
 .footer{text-align:center;color:#829382;font-size:12px;line-height:1.8;margin-top:25px}
 .footer strong{color:#a5c5a5}
@@ -80,7 +80,19 @@ button:active{transform:scale(.98)}
     <p>Genel Toplam</p>
     <div id="grandTotal">0,00 TL</div>
   </div>
-  <button class="reset-button" onclick="resetAll()">Tümünü Sıfırla</button>
+  <button class="add-button" style="margin-top:12px" onclick="completeSale()">💰 Satışı Tamamla</button>
+  <button class="reset-button" onclick="resetAll()">Sepeti Temizle</button>
+
+  <h2 class="section-title">Bugünkü Ciro</h2>
+  <div class="grand-total" style="margin-top:0">
+    <p id="ciroCount">Bugün 0 satış</p>
+    <div id="ciro">0,00 TL</div>
+  </div>
+  <div class="list" id="sales" style="margin-top:12px"></div>
+
+  <h2 class="section-title">Geçmiş Günler</h2>
+  <div class="list" id="days"></div>
+  <button class="reset-button" onclick="resetCiro()">Ciroyu Sıfırla</button>
 
   <div class="footer">
     Market Hesaplayıcı © 2026<br>
@@ -96,7 +108,110 @@ const grandEl = document.getElementById("grandTotal");
 const listEl = document.getElementById("list");
 
 let mode = "weight";
-let items = [];
+const KEY = "market-hesap-v1";
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    return Array.isArray(d) ? d.filter(x => x && Number.isFinite(x.total) && typeof x.detail === "string") : [];
+  }catch(e){ return []; }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){}
+}
+let items = load();
+
+const SKEY = "market-ciro-v1";
+function loadSales(){
+  try{
+    const d = JSON.parse(localStorage.getItem(SKEY));
+    return Array.isArray(d) ? d.filter(x => x && Number.isFinite(x.total) && Number.isFinite(x.ts) && typeof x.day === "string") : [];
+  }catch(e){ return []; }
+}
+function saveSales(){
+  try{ localStorage.setItem(SKEY, JSON.stringify(sales)); }catch(e){}
+}
+let sales = loadSales();
+const dayKey = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+
+function completeSale(){
+  if(items.length === 0){ alert("Sepet boş."); return; }
+  const now = new Date();
+  sales.push({ ts: now.getTime(), day: dayKey(now), total: items.reduce((s,it)=>s+it.total,0) });
+  saveSales();
+  items = [];
+  render();
+  renderCiro();
+}
+
+function makeRow(priceText, detailText, onDelete){
+  const row = document.createElement("div");
+  row.className = "item";
+  const info = document.createElement("div");
+  info.className = "item-info";
+  const p = document.createElement("span");
+  p.className = "item-price";
+  p.textContent = priceText;
+  const d = document.createElement("span");
+  d.className = "item-detail";
+  d.textContent = detailText;
+  info.append(p, d);
+  row.appendChild(info);
+  if(onDelete){
+    const del = document.createElement("button");
+    del.className = "delete-button";
+    del.textContent = "Sil";
+    del.addEventListener("click", onDelete);
+    row.appendChild(del);
+  }
+  return row;
+}
+
+function renderCiro(){
+  const today = dayKey(new Date());
+  const t = sales.filter(s => s.day === today);
+  document.getElementById("ciro").textContent = fmt(t.reduce((a,s)=>a+s.total,0));
+  document.getElementById("ciroCount").textContent = "Bugün " + t.length + " satış";
+
+  const sl = document.getElementById("sales");
+  sl.innerHTML = "";
+  if(t.length === 0) sl.innerHTML = '<div class="empty">Bugün satış yok.</div>';
+  t.slice().reverse().forEach(s => {
+    const time = new Date(s.ts).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+    sl.appendChild(makeRow(fmt(s.total), time, () => {
+      if(confirm("Bu satışı ciro’dan silmek istiyor musun?")){
+        sales = sales.filter(x => x !== s);
+        saveSales();
+        renderCiro();
+      }
+    }));
+  });
+
+  const map = {};
+  sales.forEach(s => {
+    if(s.day !== today){
+      map[s.day] = map[s.day] || { n: 0, sum: 0 };
+      map[s.day].n++;
+      map[s.day].sum += s.total;
+    }
+  });
+  const dl = document.getElementById("days");
+  dl.innerHTML = "";
+  const keys = Object.keys(map).sort().reverse();
+  if(keys.length === 0) dl.innerHTML = '<div class="empty">Geçmiş gün yok.</div>';
+  keys.forEach(k => {
+    const [y,m,d] = k.split("-").map(Number);
+    const label = new Date(y, m-1, d).toLocaleDateString("tr-TR") + " · " + map[k].n + " satış";
+    dl.appendChild(makeRow(fmt(map[k].sum), label, null));
+  });
+}
+
+function resetCiro(){
+  if(sales.length === 0) return;
+  if(!confirm("Tüm ciro kayıtları silinecek. Emin misin?")) return;
+  sales = [];
+  saveSales();
+  renderCiro();
+}
 
 const fmt = n => n.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " TL";
 const num = n => n.toLocaleString("tr-TR",{maximumFractionDigits:2});
@@ -169,6 +284,7 @@ function render(){
     listEl.appendChild(row);
   });
   grandEl.textContent = fmt(items.reduce((s,it)=>s+it.total,0));
+  save();
 }
 
 function resetAll(){
@@ -183,6 +299,7 @@ function resetAll(){
 qtyEl.addEventListener("input", calculate);
 priceEl.addEventListener("input", calculate);
 render();
+renderCiro();
 </script>
 </body>
 </html>

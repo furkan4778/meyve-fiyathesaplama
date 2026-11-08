@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101810">
+    <title>Meyve Hesaplayıcı</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #101810;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: #1b271c;
+            padding: 28px;
+            border-radius: 22px;
+            border: 1px solid #304333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #a5b6a5;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            font-size: 14px;
+            color: #d7e5d7;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #405541;
+            background: #101810;
+            color: white;
+            font-size: 18px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #7bc67b;
+        }
+
+        .result {
+            background: #263b29;
+            padding: 22px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result p {
+            color: #b9cbb9;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        #total {
+            font-size: 34px;
+            font-weight: bold;
+            color: #8ce28c;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #75bd75;
+            color: #102010;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .footer {
+            text-align: center;
+            color: #829382;
+            font-size: 12px;
+            margin-top: 22px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <div class="icon">🍎</div>
+            <h1>Meyve Hesaplayıcı</h1>
+            <p>Gramajı gir, fiyatı anında öğren.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="grams">Ağırlık (Gram)</label>
+            <input
+                type="number"
+                id="grams"
+                placeholder="Örn: 750"
+                min="0"
+                step="any"
+                inputmode="decimal"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="price">Kilogram Fiyatı (TL)</label>
+            <input
+                type="number"
+                id="price"
+                placeholder="Örn: 45"
+                min="0"
+                step="any"
+                inputmode="decimal"
+            >
+        </div>
+
+        <div class="result">
+            <p>Ödenecek Tutar</p>
+            <div id="total">0,00 TL</div>
+        </div>
+
+        <button onclick="resetCalculator()">
+            Sıfırla
+        </button>
+
+        <div class="footer">
+            Basit ve hızlı market hesaplayıcısı
+        </div>
+
+    </div>
+
+    <script>
+        const gramsInput = document.getElementById("grams");
+        const priceInput = document.getElementById("price");
+        const totalDisplay = document.getElementById("total");
+
+        function calculate() {
+            const grams = Number(gramsInput.value);
+            const price = Number(priceInput.value);
+
+            if (
+                gramsInput.value === "" ||
+                priceInput.value === "" ||
+                !Number.isFinite(grams) ||
+                !Number.isFinite(price) ||
+                grams < 0 ||
+                price < 0
+            ) {
+                totalDisplay.textContent = "0,00 TL";
+                return;
+            }
+
+            const total = (grams / 1000) * price;
+
+            totalDisplay.textContent =
+                total.toLocaleString("tr-TR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + " TL";
+        }
+
+        function resetCalculator() {
+            gramsInput.value = "";
+            priceInput.value = "";
+            totalDisplay.textContent = "0,00 TL";
+        }
+
+        gramsInput.addEventListener("input", calculate);
+        priceInput.addEventListener("input", calculate);
+    </script>
+
+</body>
+</html>
